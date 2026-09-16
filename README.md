@@ -21,6 +21,24 @@ does not replace or modify the existing proxy DLLs. The companion
 `vulkan/dlssg_vulkan_proxy.dll` consumes that route ABI and forwards
 device/reset/evaluate calls from a caller-provided NGX adapter.
 
+## Renderer backends
+
+The source tree also provides a selectable backend library:
+
+- `renderer::Backend::Vulkan` creates a Win32 Vulkan instance, selects a
+  graphics/present queue pair, creates a device, swapchain, image views,
+  command pool, frame fence, semaphores, resize path, and frame
+  acquire/submit/present lifecycle.
+- `renderer::Backend::Direct3D9` creates a hardware-accelerated D3D9 device,
+  reports adapter information, handles lost-device checks, reset on resize,
+  and BeginScene/EndScene/Present.
+
+Use `renderer::ParseBackend("vulkan")` or
+`renderer::ParseBackend("dx9")`, then pass the result to
+`renderer::CreateRenderer`. The existing backend remains an explicit
+`Backend::Existing` option and fails clearly because no existing application
+renderer source is present in this repository.
+
 See [VULKAN_SUPPORT.md](VULKAN_SUPPORT.md) for the required implementation
 work. Do not install this package in an RTX Remix game expecting frame
 generation; use the game's existing Remix/DLSS integration until a Vulkan

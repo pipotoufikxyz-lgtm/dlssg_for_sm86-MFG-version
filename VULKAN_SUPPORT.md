@@ -113,6 +113,13 @@ BG3's hooks would not enable RTX Remix and could corrupt unrelated Vulkan
 calls. The packaged route/proxy/loader remains an integration component, not a
 drop-in frame-generation mod.
 
+The repository also contains a standalone renderer foundation under
+`include/renderer` and `src/renderer`. It exposes Vulkan and Direct3D 9
+implementations behind one `Renderer` interface and builds as
+`renderer_backends`. This is useful for a host application or test harness;
+it does not alter RTX Remix's proprietary runtime or provide game-resource
+hooks by itself.
+
 The packaged pair is:
 
 - `vulkan/dlssg_vulkan_route.dll`
