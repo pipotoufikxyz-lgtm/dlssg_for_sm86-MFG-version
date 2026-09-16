@@ -1,5 +1,5 @@
 @echo off
-setlocal EnableExtensions
+setlocal EnableExtensions EnableDelayedExpansion
 
 rem Installs the source-built Vulkan integration beside a caller-provided game
 rem executable or directory. This does not replace version.dll or dinput8.dll.
@@ -26,6 +26,7 @@ if "%INPUT%"=="" (
 set "TARGET=%INPUT%"
 set "ROOT=%~dp0"
 set "SOURCE=%ROOT%vulkan"
+set "PACKAGE=%ROOT%SM75-X5-X6-experimental.zip"
 
 if exist "%TARGET%\*" (
     set "TARGET_KIND=directory"
@@ -42,6 +43,15 @@ if not exist "%TARGET%\." (
     echo ERROR: Could not resolve a target directory:
     echo        %TARGET%
     goto :finish_error
+)
+
+set "VARIANT=5"
+if exist "%PACKAGE%" (
+    echo Select the legacy DLSSG package to install:
+    echo   1 - SM75 X5 (recommended)
+    echo   2 - SM75 X6
+    choice /C 12 /N /M "Choice [1]: "
+    if errorlevel 2 set "VARIANT=6"
 )
 
 if exist "%SOURCE%\dlssg_vulkan_layer.dll" if not exist "%SOURCE%\dlssg_vulkan_layer.json" (
@@ -83,6 +93,43 @@ if errorlevel 1 (
     echo Program Files or another protected directory:
     echo        %BACKUP%
     goto :finish_error
+)
+
+if exist "%PACKAGE%" (
+    set "EXTRACT=%TEMP%\dlssg-sm75-%RANDOM%"
+    mkdir "!EXTRACT!" >nul 2>&1
+    if errorlevel 1 (
+        echo ERROR: Could not create temporary extraction directory.
+        goto :finish_error
+    )
+    tar -xf "%PACKAGE%" -C "!EXTRACT!"
+    if errorlevel 1 (
+        echo ERROR: Could not extract the bundled SM75 package.
+        rmdir /s /q "!EXTRACT!" >nul 2>&1
+        goto :finish_error
+    )
+    set "LEGACY=!EXTRACT!\SM75-X5-X6-experimental\SM75-X!VARIANT!-experimental"
+    if not exist "!LEGACY!\version.dll" (
+        echo ERROR: Extracted SM75 package is incomplete.
+        rmdir /s /q "%EXTRACT%" >nul 2>&1
+        goto :finish_error
+    )
+    echo Backing up existing legacy DLSSG files...
+    for %%F in ("version.dll" "dinput8.dll" "dlssg_sm86.ini") do (
+        if exist "%TARGET%\%%~F" copy /Y "%TARGET%\%%~F" "%BACKUP%\%%~F" >nul
+    )
+    if exist "%TARGET%\runtime" xcopy /E /I /Y "%TARGET%\runtime" "%BACKUP%\runtime" >nul
+    copy /Y "!LEGACY!\version.dll" "%TARGET%\version.dll" >nul
+    copy /Y "!LEGACY!\dinput8.dll" "%TARGET%\dinput8.dll" >nul
+    copy /Y "!LEGACY!\dlssg_sm86.ini" "%TARGET%\dlssg_sm86.ini" >nul
+    xcopy /E /I /Y "!LEGACY!\runtime" "%TARGET%\runtime" >nul
+    if errorlevel 1 (
+        echo ERROR: Could not install the legacy SM75 package.
+        rmdir /s /q "%EXTRACT%" >nul 2>&1
+        goto :finish_error
+    )
+    rmdir /s /q "%EXTRACT%" >nul 2>&1
+    echo Installed legacy SM75 X%VARIANT% DLSSG package.
 )
 
 for %%F in (

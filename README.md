@@ -74,6 +74,12 @@ callbacks, and connect Remix's device and swapchain lifecycle. This repository
 does not contain the proprietary Remix hook contract, so copying these files
 alone cannot enable frame generation in an RTX Remix game.
 
+If the release archive is beside `install.bat`, the installer also offers the
+bundled SM75 X5/X6 package. That package installs the actual legacy
+`version.dll`, `dinput8.dll`, `dlssg_sm86.ini`, and pinned `runtime` files
+after backing up existing copies. This is the path that can expose the DLSSG
+option in supported DX12 games; it is not a Vulkan Remix hook.
+
 When the loader-layer DLL is included, the installer also registers its
 manifest under the current user's Vulkan implicit-layer registry key. This
 makes the layer discoverable by Vulkan applications and logs instance, device,
