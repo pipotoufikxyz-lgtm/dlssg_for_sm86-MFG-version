@@ -51,6 +51,20 @@ work. Do not install this package in an RTX Remix game expecting frame
 generation; use the game's existing Remix/DLSS integration until a Vulkan
 backend is available.
 
+## Vulkan integration installer
+
+After building or obtaining the three DLLs in `vulkan\`, run:
+
+```bat
+install.bat "C:\Path\To\Game\bin"
+```
+
+The script validates the target and package files, backs up any existing
+`dlssg_vulkan_*.dll` files into a timestamped-by-random backup directory, and
+copies the route, proxy, and NGX loader DLLs. It intentionally does not replace
+`version.dll`, `dinput8.dll`, or any proprietary game files. The installed
+DLLs are integration components and are not an automatic game hook.
+
 **INSTALL FOR 3000S SERIES:**
 
 1. Fully exit the game. Back up any existing mod proxy and INI outside the game folder.
