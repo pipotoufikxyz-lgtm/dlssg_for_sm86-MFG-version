@@ -1,0 +1,11 @@
+{
+  "file_format_version": "1.0.0",
+  "layer": {
+    "name": "VK_LAYER_DLSSG_remix",
+    "type": "GLOBAL",
+    "library_path": ".\\dlssg_vulkan_layer.dll",
+    "api_version": "1.3.0",
+    "implementation_version": "1",
+    "description": "DLSSG Vulkan lifecycle integration layer"
+  }
+}
