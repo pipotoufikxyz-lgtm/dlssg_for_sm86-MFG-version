@@ -53,17 +53,26 @@ backend is available.
 
 ## Vulkan integration installer
 
-After building or obtaining the three DLLs in `vulkan\`, run:
+After building or obtaining the three DLLs in `vulkan\`, run the installer
+with either the game's binary directory or the rendering executable:
 
 ```bat
 install.bat "C:\Path\To\Game\bin"
+install.bat "C:\Path\To\Game\bin\game.exe"
 ```
 
 The script validates the target and package files, backs up any existing
-`dlssg_vulkan_*.dll` files into a timestamped-by-random backup directory, and
-copies the route, proxy, and NGX loader DLLs. It intentionally does not replace
-`version.dll`, `dinput8.dll`, or any proprietary game files. The installed
-DLLs are integration components and are not an automatic game hook.
+`dlssg_vulkan_*.dll` files into a random-named backup directory, and copies
+the route, proxy, and NGX loader DLLs. If the game is installed under
+`Program Files`, run the script from an Administrator command prompt. It
+intentionally does not replace `version.dll`, `dinput8.dll`,
+`vulkan-1.dll`, or any proprietary game files.
+
+The installed DLLs are integration components, not an automatic RTX Remix
+hook. A host must load `dlssg_vulkan_proxy.dll`, provide the Vulkan/NGX adapter
+callbacks, and connect Remix's device and swapchain lifecycle. This repository
+does not contain the proprietary Remix hook contract, so copying these files
+alone cannot enable frame generation in an RTX Remix game.
 
 **INSTALL FOR 3000S SERIES:**
 
