@@ -16,7 +16,7 @@ set "TARGET=%~f1"
 set "ROOT=%~dp0"
 set "SOURCE=%ROOT%vulkan"
 
-if exist "%TARGET%\NUL" (
+if exist "%TARGET%\*" (
     set "TARGET_KIND=directory"
 ) else if exist "%TARGET%" (
     set "TARGET=%~dp1"
@@ -33,6 +33,12 @@ if not exist "%TARGET%\." (
     exit /b 3
 )
 
+if exist "%SOURCE%\dlssg_vulkan_layer.dll" if not exist "%SOURCE%\dlssg_vulkan_layer.json" (
+    echo ERROR: Found the Vulkan layer DLL but its manifest is missing:
+    echo        %SOURCE%\dlssg_vulkan_layer.json
+    exit /b 4
+)
+
 for %%F in (
     "dlssg_vulkan_ngx.dll"
     "dlssg_vulkan_proxy.dll"
@@ -42,6 +48,20 @@ for %%F in (
         echo ERROR: Missing package artifact: %SOURCE%\%%~F
         exit /b 4
     )
+
+)
+
+if exist "%SOURCE%\dlssg_vulkan_layer.dll" (
+    copy /Y "%SOURCE%\dlssg_vulkan_layer.dll" "%TARGET%\dlssg_vulkan_layer.dll" >nul
+    copy /Y "%SOURCE%\dlssg_vulkan_layer.json" "%TARGET%\dlssg_vulkan_layer.json" >nul
+    reg add "HKCU\Software\Khronos\Vulkan\ImplicitLayers" /v "%TARGET%\dlssg_vulkan_layer.json" /t REG_DWORD /d 0 /f >nul
+    if errorlevel 1 (
+        echo ERROR: Could not register the Vulkan implicit-layer manifest.
+        echo        The DLLs were copied, but the layer is not enabled.
+        exit /b 8
+    )
+    echo Installed Vulkan loader-layer DLL and manifest.
+    echo Registered the layer for the current Windows user.
 )
 
 set "BACKUP=%TARGET%\dlssg-vulkan-backup-%RANDOM%"
@@ -88,4 +108,6 @@ echo These DLLs are integration components. The existing proxy does not
 echo automatically hook an application or replace version.dll/dinput8.dll.
 echo A Vulkan loader (vulkan-1.dll) and a host that calls this ABI are still
 echo required; this installer does not copy system or proprietary DLLs.
+echo To remove the current-user layer registration, run:
+echo   reg delete "HKCU\Software\Khronos\Vulkan\ImplicitLayers" /v "%TARGET%\dlssg_vulkan_layer.json" /f
 exit /b 0

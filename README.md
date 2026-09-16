@@ -74,6 +74,16 @@ callbacks, and connect Remix's device and swapchain lifecycle. This repository
 does not contain the proprietary Remix hook contract, so copying these files
 alone cannot enable frame generation in an RTX Remix game.
 
+When the loader-layer DLL is included, the installer also registers its
+manifest under the current user's Vulkan implicit-layer registry key. This
+makes the layer discoverable by Vulkan applications and logs instance, device,
+swapchain, and present lifecycle events to `dlssg_vulkan_layer.log` beside the
+game executable. Remove the registration with:
+
+```bat
+reg delete "HKCU\Software\Khronos\Vulkan\ImplicitLayers" /v "C:\Path\To\Game\bin\dlssg_vulkan_layer.json" /f
+```
+
 **INSTALL FOR 3000S SERIES:**
 
 1. Fully exit the game. Back up any existing mod proxy and INI outside the game folder.
