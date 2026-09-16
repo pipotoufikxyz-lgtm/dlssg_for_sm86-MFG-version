@@ -81,6 +81,13 @@ creates the route with the caller's NGX adapter callbacks, and forwards reset
 and evaluation calls. It intentionally does not hook a game's exports or
 pretend to implement the proprietary NGX Vulkan adapter.
 
+`src/vulkan_ngx_loader.*` implements the safe part of the missing NGX layer:
+it dynamically loads `nvngx_dlssg.dll`, verifies the five required Vulkan
+exports, tracks device creation and swapchain changes, and rejects stale or
+cross-device lifecycle events. It deliberately does not cast or call the
+proprietary NGX function signatures, which are not shipped in this repository;
+the caller must provide the correctly versioned `FeatureAdapter` callbacks.
+
 The packaged pair is:
 
 - `vulkan/dlssg_vulkan_route.dll`
