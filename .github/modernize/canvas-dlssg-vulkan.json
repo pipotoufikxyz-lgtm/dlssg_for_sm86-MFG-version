@@ -1,0 +1,26 @@
+{
+  "version": 1,
+  "language": "cpp",
+  "source": "C:\\Users\\pipop\\copilot-worktrees\\dlssg_for_sm86-MFG-version\\pipotoufikxyz-lgtm-refactored-enigma",
+  "goal": "Enable DLSSG frame generation through a Vulkan/RTX Remix integration while preserving existing DLL behavior",
+  "upgradeTarget": "Vulkan + Direct3D 9 backend and RTX Remix DLSSG integration",
+  "planName": "dlssg-vulkan",
+  "delegate": "local",
+  "steps": {
+    "assess": {
+      "status": "complete",
+      "updatedAt": "2026-09-16T02:51:45.547Z"
+    },
+    "plan": {
+      "status": "complete",
+      "updatedAt": "2026-09-16T02:51:46.350Z"
+    },
+    "execute": {
+      "status": "complete",
+      "updatedAt": "2026-09-16T02:53:51.395Z"
+    }
+  },
+  "updatedAt": "2026-09-16T02:53:51.395Z"
+}
+6T02:51:46.350Z"
+}
