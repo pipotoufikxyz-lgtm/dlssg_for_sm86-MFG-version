@@ -88,6 +88,31 @@ cross-device lifecycle events. It deliberately does not cast or call the
 proprietary NGX function signatures, which are not shipped in this repository;
 the caller must provide the correctly versioned `FeatureAdapter` callbacks.
 
+## Public integration sources reviewed
+
+Two public projects provide useful reference implementations, but neither is
+a drop-in RTX Remix adapter:
+
+- [`thierbig/bg3fgvk`](https://github.com/thierbig/bg3fgvk) is MIT-licensed and
+  implements Vulkan DLSS-G for Baldur's Gate 3. Its `fgvk.dll` is loaded by
+  BG3's Native Mod Loader, hooks BG3's DLSS Super Resolution call to obtain
+  depth, motion vectors, jitter, and the HUD-less color, then feeds NVIDIA
+  Streamline's DLSS-G plugin. Its hooks and resource recipe are game-specific.
+- [`NVIDIAGameWorks/bridge-remix`](https://github.com/NVIDIAGameWorks/bridge-remix)
+  is MIT-licensed but deprecated and is a 32-bit D3D9-to-64-bit bridge. It
+  does not expose a Vulkan DLSS-G interception path. NVIDIA points users to
+  [`dxvk-remix`](https://github.com/NVIDIAGameWorks/dxvk-remix) for the current
+  Remix runtime.
+
+The BG3 project confirms the missing work is an actual interception layer:
+hook the Remix Vulkan dispatch/swapchain, identify the final color, motion
+vectors, depth, jitter, and frame timing, then submit those resources through
+Streamline or the exact NGX Vulkan ABI. This repository has no Remix runtime
+hook contract or reliable way to identify those game resources, so copying
+BG3's hooks would not enable RTX Remix and could corrupt unrelated Vulkan
+calls. The packaged route/proxy/loader remains an integration component, not a
+drop-in frame-generation mod.
+
 The packaged pair is:
 
 - `vulkan/dlssg_vulkan_route.dll`
