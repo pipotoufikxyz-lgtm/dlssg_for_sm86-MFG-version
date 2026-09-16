@@ -3,6 +3,24 @@ i added x5 and x6 to the sm86 and sm75 since it didnt have any.
 
 **FOR DOWNLOADS CHECK RELEASES**
 
+## Native renderer extension point
+
+The repository now includes a source-level renderer foundation under `renderer/`
+with a CMake build. It preserves the existing packaged DLL workflow while
+providing explicit Vulkan and Direct3D 9 backend entry points for future
+resource, shader, swapchain, and frame-synchronization work.
+
+Configure and build on Windows with:
+
+```powershell
+cmake -S . -B build -DDLSSG_ENABLE_VULKAN=ON -DDLSSG_ENABLE_DX9=ON
+cmake --build build --config Release
+```
+
+Vulkan is discovered through the installed Vulkan SDK. Direct3D 9 uses the
+Windows SDK. Neither proprietary runtime DLLs nor SDK files are copied into
+the repository.
+
 **INSTALL FOR 3000S SERIES:**
 
 1. Fully exit the game. Back up any existing mod proxy and INI outside the game folder.
