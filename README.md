@@ -39,6 +39,13 @@ Use `renderer::ParseBackend("vulkan")` or
 `Backend::Existing` option and fails clearly because no existing application
 renderer source is present in this repository.
 
+The renderer interface also exposes backend-owned `CreateBuffer`,
+`CreateTexture`, `CreateShader`, and `DestroyResource` operations. Vulkan
+expects SPIR-V shader bytecode and allocates Vulkan device memory/image views;
+Direct3D 9 accepts compiled D3D9 shader bytecode and creates managed buffers
+and textures. Resource creation errors are returned to the caller instead of
+being silently downgraded.
+
 See [VULKAN_SUPPORT.md](VULKAN_SUPPORT.md) for the required implementation
 work. Do not install this package in an RTX Remix game expecting frame
 generation; use the game's existing Remix/DLSS integration until a Vulkan

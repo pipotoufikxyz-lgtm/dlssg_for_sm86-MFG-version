@@ -21,6 +21,16 @@ const char* ErrorName(VkResult result) {
 }
 }
 
+struct VulkanRenderer::Resource {
+    enum class Kind { Buffer, Image, Shader };
+    Kind kind = Kind::Buffer;
+    VkBuffer buffer = VK_NULL_HANDLE;
+    VkImage image = VK_NULL_HANDLE;
+    VkImageView view = VK_NULL_HANDLE;
+    VkDeviceMemory memory = VK_NULL_HANDLE;
+    VkShaderModule shader = VK_NULL_HANDLE;
+};
+
 VulkanRenderer::~VulkanRenderer() { Shutdown(); }
 
 bool VulkanRenderer::Check(VkResult result, const char* action,
@@ -68,6 +78,7 @@ bool VulkanRenderer::CreateDevice(std::string& error) {
         error = "No Vulkan physical device is available";
         return false;
     }
+
     std::vector<VkPhysicalDevice> devices(count);
     if (!Check(vkEnumeratePhysicalDevices(instance_, &count, devices.data()),
                "vkEnumeratePhysicalDevices", error))
@@ -310,6 +321,103 @@ void VulkanRenderer::Shutdown() noexcept {
     instance_ = VK_NULL_HANDLE; surface_ = VK_NULL_HANDLE; device_ = VK_NULL_HANDLE;
     command_pool_ = VK_NULL_HANDLE; physical_device_ = VK_NULL_HANDLE;
     graphics_queue_ = present_queue_ = VK_NULL_HANDLE;
+}
+
+void* VulkanRenderer::CreateBuffer(const BufferDesc& desc, std::string& error) {
+    if (!device_ || desc.size == 0) { error = "Invalid Vulkan buffer request"; return nullptr; }
+    auto* resource = new Resource();
+    VkBufferUsageFlags usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+    switch (desc.usage) {
+    case BufferUsage::Index: usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT; break;
+    case BufferUsage::Uniform: usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT; break;
+    case BufferUsage::Storage: usage = VK_BUFFER_USAGE_STORAGE_BUFFER_BIT; break;
+    default: break;
+    }
+    if (!CreateBufferInternal(desc.size, usage,
+                               VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                   VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                               *resource, error) ||
+        !UploadBuffer(*resource, desc.initial_data, desc.size, error)) {
+        DestroyResource(resource);
+        return nullptr;
+    }
+    return resource;
+}
+
+void* VulkanRenderer::CreateTexture(const TextureDesc& desc, std::string& error) {
+    if (!device_ || desc.width == 0 || desc.height == 0) {
+        error = "Invalid Vulkan texture request"; return nullptr;
+    }
+    auto* resource = new Resource();
+    resource->kind = Resource::Kind::Image;
+    VkImageCreateInfo image{VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
+    image.imageType = VK_IMAGE_TYPE_2D;
+    image.extent = {desc.width, desc.height, 1};
+    image.mipLevels = desc.mip_levels;
+    image.arrayLayers = 1;
+    image.format = VK_FORMAT_R8G8B8A8_UNORM;
+    image.tiling = VK_IMAGE_TILING_OPTIMAL;
+    image.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+    image.usage = VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT;
+    if (desc.render_target) image.usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+    image.samples = VK_SAMPLE_COUNT_1_BIT;
+    if (!Check(vkCreateImage(device_, &image, nullptr, &resource->image),
+               "vkCreateImage", error))
+        return nullptr;
+    VkMemoryRequirements requirements{};
+    vkGetImageMemoryRequirements(device_, resource->image, &requirements);
+    uint32_t type = FindMemoryType(requirements.memoryTypeBits,
+                                   VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT);
+    if (type == UINT32_MAX) { error = "No compatible Vulkan image memory type"; DestroyResource(resource); return nullptr; }
+    VkMemoryAllocateInfo allocate{VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO};
+    allocate.allocationSize = requirements.size;
+    allocate.memoryTypeIndex = type;
+    if (!Check(vkAllocateMemory(device_, &allocate, nullptr, &resource->memory),
+               "vkAllocateMemory", error) ||
+        !Check(vkBindImageMemory(device_, resource->image, resource->memory, 0),
+               "vkBindImageMemory", error)) {
+        DestroyResource(resource); return nullptr;
+    }
+    VkImageViewCreateInfo view{VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO};
+    view.image = resource->image;
+    view.viewType = VK_IMAGE_VIEW_TYPE_2D;
+    view.format = image.format;
+    view.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+    view.subresourceRange.levelCount = desc.mip_levels;
+    view.subresourceRange.layerCount = 1;
+    if (!Check(vkCreateImageView(device_, &view, nullptr, &resource->view),
+               "vkCreateImageView", error)) {
+        DestroyResource(resource); return nullptr;
+    }
+    return resource;
+}
+
+void* VulkanRenderer::CreateShader(const ShaderDesc& desc, std::string& error) {
+    if (!device_ || !desc.bytecode || desc.bytecode_size == 0 ||
+        desc.bytecode_size % 4 != 0) {
+        error = "Vulkan shader bytecode must be aligned SPIR-V"; return nullptr;
+    }
+    auto* resource = new Resource();
+    resource->kind = Resource::Kind::Shader;
+    VkShaderModuleCreateInfo create{VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO};
+    create.codeSize = desc.bytecode_size;
+    create.pCode = static_cast<const uint32_t*>(desc.bytecode);
+    if (!Check(vkCreateShaderModule(device_, &create, nullptr, &resource->shader),
+               "vkCreateShaderModule", error)) {
+        delete resource; return nullptr;
+    }
+    return resource;
+}
+
+void VulkanRenderer::DestroyResource(void* value) noexcept {
+    auto* resource = static_cast<Resource*>(value);
+    if (!resource || !device_) { delete resource; return; }
+    if (resource->view) vkDestroyImageView(device_, resource->view, nullptr);
+    if (resource->shader) vkDestroyShaderModule(device_, resource->shader, nullptr);
+    if (resource->buffer) vkDestroyBuffer(device_, resource->buffer, nullptr);
+    if (resource->image) vkDestroyImage(device_, resource->image, nullptr);
+    if (resource->memory) vkFreeMemory(device_, resource->memory, nullptr);
+    delete resource;
 }
 
 }  // namespace renderer

@@ -120,6 +120,21 @@ implementations behind one `Renderer` interface and builds as
 it does not alter RTX Remix's proprietary runtime or provide game-resource
 hooks by itself.
 
+The standalone renderer library is configured by CMake:
+
+```powershell
+$env:VULKAN_SDK = "C:\VulkanSDK\1.4.357.0"
+cmake -S . -B build -G "Visual Studio 17 2022" -A x64 `
+  -DVulkan_INCLUDE_DIR="$env:VULKAN_SDK\Include" `
+  -DVulkan_LIBRARY="$env:VULKAN_SDK\Lib\vulkan-1.lib"
+cmake --build build --config Release
+```
+
+The backend library is `build\Release\renderer_backends.lib`. Vulkan shader
+inputs must already be SPIR-V; this repository does not contain application
+shaders to translate. DX9 shader inputs must be compiled for the D3D9 shader
+model by the host application.
+
 The packaged pair is:
 
 - `vulkan/dlssg_vulkan_route.dll`

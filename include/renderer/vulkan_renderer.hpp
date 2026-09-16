@@ -19,13 +19,22 @@ public:
     bool EndFrame(std::string&) override;
     void Shutdown() noexcept override;
     const DeviceInfo& Device() const noexcept override { return device_info_; }
+    void* CreateBuffer(const BufferDesc&, std::string&) override;
+    void* CreateTexture(const TextureDesc&, std::string&) override;
+    void* CreateShader(const ShaderDesc&, std::string&) override;
+    void DestroyResource(void*) noexcept override;
 
 private:
+    struct Resource;
     bool CreateInstance(bool validation, std::string&);
     bool CreateDevice(std::string&);
     bool CreateSwapchain(uint32_t, uint32_t, std::string&);
     void DestroySwapchain() noexcept;
     bool Check(VkResult, const char*, std::string&);
+    uint32_t FindMemoryType(uint32_t, VkMemoryPropertyFlags) const;
+    bool CreateBufferInternal(VkDeviceSize, VkBufferUsageFlags,
+                              VkMemoryPropertyFlags, Resource&, std::string&);
+    bool UploadBuffer(Resource&, const void*, size_t, std::string&);
 
     VkInstance instance_ = VK_NULL_HANDLE;
     VkSurfaceKHR surface_ = VK_NULL_HANDLE;

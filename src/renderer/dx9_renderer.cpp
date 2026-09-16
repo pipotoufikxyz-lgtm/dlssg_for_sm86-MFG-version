@@ -3,6 +3,7 @@
 #if defined(_WIN32)
 #include <windows.h>
 #include <d3d9.h>
+#include <cstring>
 #endif
 
 namespace renderer {
@@ -88,6 +89,100 @@ void Dx9Renderer::Shutdown() noexcept {
     if (device_) device_->Release();
     if (api_) api_->Release();
     device_ = nullptr; api_ = nullptr;
+#endif
+}
+
+void* Dx9Renderer::CreateBuffer(const BufferDesc& desc, std::string& error) {
+#if defined(_WIN32)
+    if (!device_ || desc.size == 0) { error = "Invalid Direct3D 9 buffer request"; return nullptr; }
+    DWORD usage = 0;
+    D3DPOOL pool = D3DPOOL_MANAGED;
+    if (desc.usage == BufferUsage::Vertex) usage |= D3DUSAGE_WRITEONLY;
+    if (desc.usage == BufferUsage::Index) usage |= D3DUSAGE_WRITEONLY;
+    HRESULT result;
+    if (desc.usage == BufferUsage::Index) {
+        IDirect3DIndexBuffer9* index_buffer = nullptr;
+        result = device_->CreateIndexBuffer(static_cast<UINT>(desc.size), usage,
+            D3DFMT_INDEX32, pool, &index_buffer, nullptr);
+        if (FAILED(result)) { error = "Direct3D 9 buffer creation failed"; return nullptr; }
+        if (desc.initial_data) {
+            void* mapped = nullptr;
+            if (FAILED(index_buffer->Lock(0, 0, &mapped, 0))) {
+                index_buffer->Release(); error = "Direct3D 9 buffer upload failed"; return nullptr;
+            }
+            std::memcpy(mapped, desc.initial_data, desc.size);
+            index_buffer->Unlock();
+        }
+        return index_buffer;
+    } else {
+        IDirect3DVertexBuffer9* vertex_buffer = nullptr;
+        result = device_->CreateVertexBuffer(static_cast<UINT>(desc.size), usage, 0,
+            pool, &vertex_buffer, nullptr);
+        if (FAILED(result)) { error = "Direct3D 9 buffer creation failed"; return nullptr; }
+        if (desc.initial_data) {
+            void* mapped = nullptr;
+            if (FAILED(vertex_buffer->Lock(0, 0, &mapped, 0))) {
+                vertex_buffer->Release(); error = "Direct3D 9 buffer upload failed"; return nullptr;
+            }
+            std::memcpy(mapped, desc.initial_data, desc.size);
+            vertex_buffer->Unlock();
+        }
+        return vertex_buffer;
+    }
+#else
+    error = "Direct3D 9 is only available on Windows"; return nullptr;
+#endif
+}
+
+void* Dx9Renderer::CreateTexture(const TextureDesc& desc, std::string& error) {
+#if defined(_WIN32)
+    if (!device_ || desc.width == 0 || desc.height == 0) {
+        error = "Invalid Direct3D 9 texture request"; return nullptr;
+    }
+    IDirect3DTexture9* texture = nullptr;
+    HRESULT result = device_->CreateTexture(desc.width, desc.height, desc.mip_levels,
+        desc.render_target ? D3DUSAGE_RENDERTARGET : 0, D3DFMT_A8R8G8B8,
+        D3DPOOL_MANAGED, &texture, nullptr);
+    if (FAILED(result)) { error = "Direct3D 9 texture creation failed"; return nullptr; }
+    if (desc.initial_data) {
+        D3DLOCKED_RECT locked{};
+        if (FAILED(texture->LockRect(0, &locked, nullptr, 0))) {
+            texture->Release(); error = "Direct3D 9 texture upload failed"; return nullptr;
+        }
+        const auto* source = static_cast<const uint8_t*>(desc.initial_data);
+        size_t pitch = desc.initial_row_pitch ? desc.initial_row_pitch : desc.width * 4;
+        for (uint32_t y = 0; y < desc.height; ++y)
+            std::memcpy(static_cast<uint8_t*>(locked.pBits) + y * locked.Pitch,
+                        source + y * pitch, desc.width * 4);
+        texture->UnlockRect(0);
+    }
+    return texture;
+#else
+    error = "Direct3D 9 is only available on Windows"; return nullptr;
+#endif
+}
+
+void* Dx9Renderer::CreateShader(const ShaderDesc& desc, std::string& error) {
+#if defined(_WIN32)
+    if (!device_ || !desc.bytecode || desc.bytecode_size == 0) {
+        error = "Direct3D 9 shader bytecode is required"; return nullptr;
+    }
+    IDirect3DVertexShader9* shader = nullptr;
+    if (FAILED(device_->CreateVertexShader(static_cast<const DWORD*>(desc.bytecode),
+                                           &shader))) {
+        error = "Direct3D 9 vertex shader creation failed"; return nullptr;
+    }
+    return shader;
+#else
+    error = "Direct3D 9 is only available on Windows"; return nullptr;
+#endif
+}
+
+void Dx9Renderer::DestroyResource(void* value) noexcept {
+#if defined(_WIN32)
+    if (value) static_cast<IUnknown*>(value)->Release();
+#else
+    (void)value;
 #endif
 }
 

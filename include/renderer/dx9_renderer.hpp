@@ -17,6 +17,10 @@ public:
     bool EndFrame(std::string&) override;
     void Shutdown() noexcept override;
     const DeviceInfo& Device() const noexcept override { return device_info_; }
+    void* CreateBuffer(const BufferDesc&, std::string&) override;
+    void* CreateTexture(const TextureDesc&, std::string&) override;
+    void* CreateShader(const ShaderDesc&, std::string&) override;
+    void DestroyResource(void*) noexcept override;
 
 private:
 #if defined(_WIN32)
