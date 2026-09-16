@@ -20,6 +20,9 @@ typedef struct DlssgVulkanNgxStatus {
     uint32_t required_exports;
     uint32_t resolved_exports;
     uint32_t ready;
+    uint32_t supports_extended_init;
+    uint32_t supports_feature_v1;
+    uint32_t supports_shutdown_v1;
 } DlssgVulkanNgxStatus;
 
 typedef struct DlssgVulkanLifecycle {

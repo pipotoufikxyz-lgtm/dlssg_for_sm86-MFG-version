@@ -15,13 +15,19 @@ struct DlssgVulkanNgx {
 
 namespace {
 
-constexpr uint32_t kRequiredExports = 5;
+constexpr uint32_t kRequiredExports = 11;
 constexpr const char* kExports[] = {
     "NVSDK_NGX_VULKAN_Init",
+    "NVSDK_NGX_VULKAN_Init_Ext",
+    "NVSDK_NGX_VULKAN_Init_Ext2",
     "NVSDK_NGX_VULKAN_CreateFeature",
+    "NVSDK_NGX_VULKAN_CreateFeature1",
+    "NVSDK_NGX_VULKAN_GetFeatureRequirements",
+    "NVSDK_NGX_VULKAN_GetScratchBufferSize",
     "NVSDK_NGX_VULKAN_EvaluateFeature",
     "NVSDK_NGX_VULKAN_ReleaseFeature",
     "NVSDK_NGX_VULKAN_Shutdown",
+    "NVSDK_NGX_VULKAN_Shutdown1",
 };
 
 bool HasSize(uint32_t actual, size_t required) {
@@ -87,6 +93,9 @@ DlssgVulkanNgx_GetStatus(const DlssgVulkanNgx* loader,
     status->required_exports = kRequiredExports;
     status->resolved_exports = loader->resolved;
     status->ready = loader->resolved == kRequiredExports;
+    status->supports_extended_init = 1;
+    status->supports_feature_v1 = 1;
+    status->supports_shutdown_v1 = 1;
     return status->ready ? VK_SUCCESS : VK_ERROR_INCOMPATIBLE_DRIVER;
 }
 
