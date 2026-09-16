@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "language": "auto",
+  "source": "C:\\Users\\pipop\\copilot-worktrees\\dlssg_for_sm86-MFG-version\\pipotoufikxyz-lgtm-special-fiesta",
+  "goal": "Add full Vulkan and DirectX 9 rendering backends while preserving the existing renderer, with explicit backend selection and build/runtime integration.",
+  "upgradeTarget": "Vulkan and DirectX 9",
+  "planName": "vulkan-dx9-support",
+  "delegate": "local",
+  "steps": {
+    "assess": {
+      "status": "complete",
+      "updatedAt": "2026-09-16T02:56:13.147Z"
+    },
+    "plan": {
+      "status": "blocked",
+      "updatedAt": "2026-09-16T02:56:14.520Z"
+    },
+    "execute": {
+      "status": "blocked",
+      "updatedAt": "2026-09-16T02:56:15.823Z"
+    }
+  },
+  "updatedAt": "2026-09-16T02:56:18.950Z"
+}
