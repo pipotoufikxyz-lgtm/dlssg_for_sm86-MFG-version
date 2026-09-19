@@ -1,7 +1,19 @@
 # dlssg_for_sm86-MFG-version
+
 i added x5 and x6 to the sm86 and sm75 since it didnt have any. 
 
 UPDATE: ADEDD SMOOTH MOTION
+
+To Install: Drag And Drop it Next to your game's .exe
+
+To Activate it: activate it through Nvidia Profile Inspector
+
+**To Use Nvidia profile inspector:
+
+-Open NVIDIA Profile Inspector on your computer.
+-Search for the specific game profile or create a new profile and manually add the game's executable file (.exe)
+-Locate Smooth Motion
+-Enable it and Save**
 
 **FOR DOWNLOADS CHECK RELEASES**
 
