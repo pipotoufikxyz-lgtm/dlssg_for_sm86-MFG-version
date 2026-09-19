@@ -8,12 +8,14 @@ To Install: Drag And Drop it Next to your game's .exe
 
 To Activate it: activate it through Nvidia Profile Inspector
 
-**To Use Nvidia profile inspector:
+**To Use Nvidia profile inspector:**
 
--Open NVIDIA Profile Inspector on your computer.
--Search for the specific game profile or create a new profile and manually add the game's executable file (.exe)
--Locate Smooth Motion
--Enable it and Save**
+**-Open NVIDIA Profile Inspector on your computer.**
+**-Search for the specific game profile or create a new profile and manually add the game's executable file (.exe)**
+
+**-Locate Smooth Motion**
+
+**-Enable it and Save**
 
 **FOR DOWNLOADS CHECK RELEASES**
 
