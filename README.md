@@ -1,16 +1,19 @@
 # dlssg_for_sm86-MFG-version
 
 i added x5 and x6 to the sm86 and sm75 since it didnt have any. 
-
+-------------------------------------------------------------
 UPDATE: ADEDD SMOOTH MOTION
+-------------------------------------------------------------
 
 To Install: Drag And Drop it Next to your game's .exe
 
 To Activate it: activate it through Nvidia Profile Inspector
 
+
 **To Use Nvidia profile inspector:**
 
 **-Open NVIDIA Profile Inspector on your computer.**
+
 **-Search for the specific game profile or create a new profile and manually add the game's executable file (.exe)**
 
 **-Locate Smooth Motion**
@@ -18,6 +21,8 @@ To Activate it: activate it through Nvidia Profile Inspector
 **-Enable it and Save**
 
 **FOR DOWNLOADS CHECK RELEASES**
+
+--------------------------------------------------------------------------
 
 **INSTALL FOR 3000S SERIES:**
 
@@ -27,6 +32,10 @@ To Activate it: activate it through Nvidia Profile Inspector
    the game loads. Preserve other mods and the game's original DLSSG files. 
 3. Start the game, enable frame generation, and select X6 if supported.
 
+-------------------------------------------------------------
+
 **INSTALL FOR 2000S SERIES:**
 
   Same Steps As 3000s series's install
+
+  -------------------------------------------------------------
