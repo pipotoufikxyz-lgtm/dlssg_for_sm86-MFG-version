@@ -41,3 +41,4 @@ To Activate it: activate it through Nvidia Profile Inspector
   -------------------------------------------------------------
 
 
+Credits: sdii1995 for dlssg.
