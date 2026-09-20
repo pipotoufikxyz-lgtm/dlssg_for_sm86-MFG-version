@@ -4,10 +4,10 @@ i added x5 and x6 to the sm86 and sm75 since it didnt have any.
 
   Dont't forget to suggest features in discussion tab
 -------------------------------------------------------------
-UPDATE: ADEDD SMOOTH MOTION
--------------------------------------------------------------
+UPDATE: ADEDD SMOOTH MOTION INSTALLER 
+<img width="1909" height="957" alt="image" src="https://github.com/user-attachments/assets/d102cb49-9fde-46ff-9bc8-8229392e99de" />
 
-To Install: Drag And Drop it Next to your game's .exe
+-------------------------------------------------------------
 
 To Activate it: activate it through Nvidia Profile Inspector
 
@@ -15,8 +15,6 @@ To Activate it: activate it through Nvidia Profile Inspector
 **To Use Nvidia profile inspector:**
 
 **-Open NVIDIA Profile Inspector on your computer.**
-
-**-Search for the specific game profile or create a new profile and manually add the game's executable file (.exe)**
 
 **-Locate Smooth Motion**
 
