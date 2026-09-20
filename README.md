@@ -1,6 +1,8 @@
 # dlssg_for_sm86-MFG-version
 
 i added x5 and x6 to the sm86 and sm75 since it didnt have any. 
+
+  Dont't forget to suggest features in discussion tab
 -------------------------------------------------------------
 UPDATE: ADEDD SMOOTH MOTION
 -------------------------------------------------------------
@@ -39,3 +41,5 @@ To Activate it: activate it through Nvidia Profile Inspector
   Same Steps As 3000s series's install
 
   -------------------------------------------------------------
+
+
