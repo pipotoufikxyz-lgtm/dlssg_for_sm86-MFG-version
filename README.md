@@ -5,10 +5,11 @@ i added x5 and x6 to the sm86 and sm75 since it didnt have any.
   Dont't forget to suggest features in discussion tab
 -------------------------------------------------------------
 
-NOTE: You may have issues with the installer. it's recommended you try to install it manually (it's very easy) I'll be reworking the installer to fix it.
 
-UPDATE: ADEDD SMOOTH MOTION INSTALLER 
-<img width="1909" height="957" alt="image" src="https://github.com/user-attachments/assets/d102cb49-9fde-46ff-9bc8-8229392e99de" />
+UPDATE: Fixed Smooth Motion Installer + Added Themes + Added Vulkan support For DLSSG MFG
+
+<img width="1907" height="952" alt="image" src="https://github.com/user-attachments/assets/5fd0586e-4433-4a3e-9943-7158718869bb" />
+
 
 -------------------------------------------------------------
 
