@@ -12,7 +12,7 @@
  ----------------------------------------------- -----------------------------------------------
 
 
-Added Smooth Motion. vulkan support for dlssg
+Added Smooth Motion. vulkan support for dlssg             **NEW RELEASE 1.6**
 
   Dont't forget to suggest features in discussion tab
 -------------------------------------------------------------
