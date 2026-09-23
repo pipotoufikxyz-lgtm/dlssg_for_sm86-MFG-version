@@ -12,13 +12,13 @@
  ----------------------------------------------- -----------------------------------------------
 
 
-Added Smooth Motion. vulkan support for dlssg             **NEW RELEASE 1.6**
+Added Smooth Motion. vulkan support for dlssg             **NEW RELEASE 2.8.2**
 
   Dont't forget to suggest features in discussion tab
 -------------------------------------------------------------
 
 
-UPDATE: Fixed Smooth Motion Installer + Added Themes + Added Vulkan support For DLSSG MFG
+UPDATE: Added Smooth Motion For Microsoft/PC Gamepass Games. 
 
 <img width="1907" height="952" alt="image" src="https://github.com/user-attachments/assets/5fd0586e-4433-4a3e-9943-7158718869bb" />
 
