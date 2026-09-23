@@ -5,8 +5,7 @@
 
   - DLSSG MODIFED VERSION
 
-
-
+**im looking for testers who have 20 series**
 
                                                           
  ----------------------------------------------- -----------------------------------------------
