@@ -41,6 +41,8 @@ To Activate it: activate it through Nvidia Profile Inspector
 
 **INSTALL FOR 3000S SERIES:**
 
+<img width="1516" height="493" alt="image" src="https://github.com/user-attachments/assets/5b754f4d-e8d0-4c87-bc09-1c3114fc08a9" />
+
 1. Fully exit the game. Back up any existing mod proxy and INI outside the game folder.
 2. Copy this package's `version.dll` and `dlssg_sm86.ini` beside the actual rendering EXE.
    If that DLL name is occupied, choose ONE original-name DLL from `altnative` that
