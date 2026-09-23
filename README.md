@@ -11,7 +11,7 @@
  ----------------------------------------------- -----------------------------------------------
 
 
-Added Smooth Motion. vulkan support for dlssg             **NEW RELEASE 2.8.2**
+  **NEW RELEASE 2.8.2**
 
   Dont't forget to suggest features in discussion tab
 -------------------------------------------------------------
