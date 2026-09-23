@@ -5,7 +5,7 @@
 
   - DLSSG MODIFED VERSION
 
-**im looking for testers who have 20 series**
+**im looking for testers who have 20 series. add me on discord: kamonix_12_44321**
 
                                                           
  ----------------------------------------------- -----------------------------------------------
