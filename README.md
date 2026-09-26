@@ -37,7 +37,7 @@ To Activate it: activate it through Nvidia Profile Inspector
 
 --------------------------------------------------------------------------
 
-**INSTALL FOR 3000S SERIES:**
+**DLSSG INSTALL FOR 3000S SERIES:**
 
 <img width="1516" height="493" alt="image" src="https://github.com/user-attachments/assets/5b754f4d-e8d0-4c87-bc09-1c3114fc08a9" />
 
@@ -49,7 +49,7 @@ To Activate it: activate it through Nvidia Profile Inspector
 
 -------------------------------------------------------------
 
-**INSTALL FOR 2000S SERIES:**
+**DLSSG INSTALL FOR 2000S SERIES:**
 
   Same Steps As 3000s series's install
 
