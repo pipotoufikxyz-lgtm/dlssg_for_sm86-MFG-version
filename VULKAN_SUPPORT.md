@@ -146,3 +146,14 @@ The packaged pair is:
 Keep both files together. The proxy loads the route DLL by name (or by the
 explicit path passed to `DlssgVulkanProxy_Create`) and reports load, ABI, and
 route errors through `DlssgVulkanProxy_LastError`.
+
+The package also includes `dlssg_vulkan_layer.dll` and
+`dlssg_vulkan_layer.json`. The layer is a real Vulkan loader layer: it chains
+the loader's instance/device dispatch, tracks physical devices, observes
+device creation, swapchain creation/destruction, and queue presentation, and
+writes lifecycle diagnostics beside the executable. `install.bat` registers
+the manifest for the current user so Vulkan applications can discover it.
+The layer deliberately does not submit DLSSG work from arbitrary present
+images: without the Remix resource contract, doing so would pass invalid
+color/flow/depth handles to NGX and could corrupt the process. A host adapter
+must connect `DlssgVulkanProxy_*` when those resources are available.
