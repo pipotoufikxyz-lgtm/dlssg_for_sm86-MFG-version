@@ -11,7 +11,7 @@
 
   **NEW RELEASE 2.8.4**
 
-  Dont't forget to suggest features in discussion tab
+
 -------------------------------------------------------------
 
 
