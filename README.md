@@ -5,8 +5,6 @@
 
   - DLSSG MODIFED VERSION
 
-**im looking for testers who have 20 series. add me on discord: kamonix_12_44321**
-
                                                           
  ----------------------------------------------- -----------------------------------------------
 
@@ -17,7 +15,7 @@
 -------------------------------------------------------------
 
 
-UPDATE: **ADDED SMOOTH MOTION SUPPORT FOR 617.14 DRIVER. (wasn't working)**
+UPDATE: **ADDED SMOOTH MOTION FOR 20 SERIES**
 
 <img width="1907" height="952" alt="image" src="https://github.com/user-attachments/assets/5fd0586e-4433-4a3e-9943-7158718869bb" />
 
