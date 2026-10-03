@@ -1,0 +1,113 @@
+diff --git a/source/manager/manager.cpp b/source/manager/manager.cpp
+index 15eea35..6bbddab 100644
+--- a/source/manager/manager.cpp
++++ b/source/manager/manager.cpp
+@@ -32,6 +32,9 @@ struct ArtUpdate{manager::Game game;size_t generation=0;};
+ struct App {
+  HWND hwnd=nullptr;SetupView setup;std::wstring package,data;std::vector<manager::Game> games;std::vector<catalog::Hidden> hidden;std::vector<std::wstring> activity;
+  int page=0,selected=-1,start=0,focus=-1,hover=-1,pressed=-1;int theme=0,accentChoice=0;std::wstring mode=L"asi",loader;bool errorShowing=false,safeUi=false,dark=false,busy=false,renderFailed=false,resizing=false;std::atomic_bool cancel{false};
++ // Startup discovery is opt-out: opening the Manager no longer scans the stores
++ // unless the user asks for it in Settings.
++ bool autoScanOnStart=true;
+  std::shared_ptr<std::atomic_bool> artCancel;size_t artGeneration=0,artJobs=0;bool closing=false;
+  bool fgMenu=false;
+  language::Language languagePreference=language::Language::Automatic,uiLanguage=language::Language::English;
+@@ -58,19 +61,21 @@ bool languagePreferences(bool load){try{
+ }catch(...){if(load){app.languagePreference=language::Language::Automatic;app.uiLanguage=language::resolve(app.languagePreference,GetUserDefaultUILanguage());}return false;}}
+ void clearSelection(){manager_selection::clear(app.selected,app.fgMenu,app.focus,app.hover,app.pressed);app.hits.clear();}
+ const wchar_t* nav[]={L"Home",L"Games",L"Compatibility",L"History",L"Settings",L"About"};
+-void preferences(bool load){try{
++bool preferences(bool load){try{
+  auto path=manager::join(app.data,L"preferences.txt");auto old=manager::read(path,128);
+  if(load){
+-  int theme=0,accent=0;
+-  if(old.rfind("SM86-PREFS-2\n",0)==0&&std::sscanf(old.c_str()+13,"%d\n%d",&theme,&accent)==2){app.theme=installer_theme::clampTheme(theme);app.accentChoice=installer_theme::clampAccent(accent);}
++  int theme=0,accent=0,autoScan=1;
++  if(old.rfind("SM86-PREFS-3\n",0)==0&&std::sscanf(old.c_str()+13,"%d\n%d\n%d",&theme,&accent,&autoScan)==3){app.theme=installer_theme::clampTheme(theme);app.accentChoice=installer_theme::clampAccent(accent);app.autoScanOnStart=autoScan!=0;}
++  else if(old.rfind("SM86-PREFS-2\n",0)==0&&std::sscanf(old.c_str()+13,"%d\n%d",&theme,&accent)==2){app.theme=installer_theme::clampTheme(theme);app.accentChoice=installer_theme::clampAccent(accent);}
+   else if(old.rfind("SM86-PREFS-1\n",0)==0&&old.size()>13)app.theme=old[13]=='1'?1:0;
+-  app.dark=installer_theme::themes[app.theme].dark;return;
++  app.dark=installer_theme::themes[app.theme].dark;return true;
+  }
+- if(GetFileAttributesW(path.c_str())!=INVALID_FILE_ATTRIBUTES&&(!manager::ordinary(path)||(old.rfind("SM86-PREFS-1\n",0)!=0&&old.rfind("SM86-PREFS-2\n",0)!=0)))return;
++ if(GetFileAttributesW(path.c_str())!=INVALID_FILE_ATTRIBUTES&&(!manager::ordinary(path)||(old.rfind("SM86-PREFS-1\n",0)!=0&&old.rfind("SM86-PREFS-2\n",0)!=0&&old.rfind("SM86-PREFS-3\n",0)!=0)))return false;
+  auto tmp=path+L".tmp-"+std::to_wstring(GetTickCount64());
+- manager::writeNew(tmp,"SM86-PREFS-2\n"+std::to_string(app.theme)+"\n"+std::to_string(app.accentChoice)+"\n");
+- if(!MoveFileExW(tmp.c_str(),path.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH))DeleteFileW(tmp.c_str());
+-}catch(...) {}}
++ manager::writeNew(tmp,"SM86-PREFS-3\n"+std::to_string(app.theme)+"\n"+std::to_string(app.accentChoice)+"\n"+std::to_string(app.autoScanOnStart?1:0)+"\n");
++ if(!MoveFileExW(tmp.c_str(),path.c_str(),MOVEFILE_REPLACE_EXISTING|MOVEFILE_WRITE_THROUGH)){DeleteFileW(tmp.c_str());return false;}
++ return true;
++}catch(...) {return false;}}
+ 
+ bool persist(){try{
+  std::string s="SM86-MANAGER-4\n";for(auto& g:app.games){std::vector<std::wstring> fields={g.exe,g.title,g.store,g.steamId,g.steamRoot,g.cover,g.hero,g.installRoot,g.storeId,g.pinnedExe};bool first=true;for(auto field:fields){for(auto& c:field)if(c==L'\r'||c==L'\n'||c==L'\t')c=L' ';if(!first)s+='\t';s+=manager::toUtf8(field);first=false;}s+='\n';}
+@@ -264,6 +269,10 @@ void languageMenu(){
+ }
+ void action(int id){
+  if(id==55){languageMenu();return;}
++ if(id==56){if(app.busy)return;app.autoScanOnStart=!app.autoScanOnStart;
++  if(!preferences(false))activity(L"Could not save the startup scanning setting. It applies to this session only.");
++  else activity(app.autoScanOnStart?L"Automatic game scanning at startup is enabled.":L"Automatic game scanning at startup is disabled. Use Discover games to scan when needed.");
++  InvalidateRect(app.hwnd,nullptr,FALSE);return;}
+  if(id==31||id==54){appearanceMenu(id==54);return;}
+  if(id>=60&&id<66){app.theme=id-60;app.dark=installer_theme::themes[app.theme].dark;preferences(false);updateAppearance();return;}
+  if(id==51||id==52){if(app.busy)return;app.mode=id==51?L"version":L"asi";if(app.setup.open&&!app.setup.restore&&!app.setup.uninstall)prepareSetup(app.setup.game,app.loader);InvalidateRect(app.hwnd,nullptr,FALSE);return;}
+@@ -462,16 +471,19 @@ void draw(){if(!target()){if(!app.renderFailed){app.renderFailed=true;PostMessag
+   }
+   if(app.page==3){labelUi(L"Recent activity",{x,185,right-28,219},app.h2,ink());for(size_t i=0;i<std::min<size_t>(10,app.activity.size());++i)label(activityCaption(app.activity[i]),{x,237+i*42.f,right-28,276+i*42.f},app.small,muted());labelUi(L"Select a game and choose Uninstall Smooth Motion to review removal.",{x,app.height-137,right-28,app.height-99},app.body,ink());}
+   if(app.page==4){
+-   labelUi(L"Theme",{x,192,right-28,225},app.h2,ink());float w=(right-x-52)/3;
+-   for(int i=0;i<6;++i){float bx=x+(i%3)*(w+12),by=245+(i/3)*64.f;button({bx,by,bx+w,by+46},installer_theme::themes[i].name,60+i,app.theme==i);}
+-   labelUi(L"Accent colour",{x,389,x+290,423},app.h2,ink());
+-   button({x,434,x+280,480},tr(installer_theme::accentNames[app.accentChoice])+L"  ▾",54);
+-   const float languageX=x+310;
+-   labelUi(L"Language / 语言",{languageX,389,right-28,423},app.h2,ink());
+-   button({languageX,434,right-28,480},std::wstring(language::languageName(app.languagePreference))+L"  ▾",55);
+-   labelUi(L"Language changes immediately and is remembered for the next launch.",{x,501,right-28,543},app.body,muted());
+-   labelUi(L"Some technical diagnostics remain in English. Game names and file paths are unchanged.",{x,551,right-28,590},app.small,muted());
+-   button({x,620,x+300,666},textFormat(L"Restore hidden games ({0})",{std::to_wstring(app.hidden.size())}),35,false,!app.hidden.empty());
++   labelUi(L"Theme",{x,180,right-28,212},app.h2,ink());float w=(right-x-52)/3;
++   for(int i=0;i<6;++i){float bx=x+(i%3)*(w+12),by=228+(i/3)*64.f;button({bx,by,bx+w,by+46},installer_theme::themes[i].name,60+i,app.theme==i);}
++   labelUi(L"Accent colour",{x,350,x+280,382},app.h2,ink());
++   button({x,390,x+270,434},tr(installer_theme::accentNames[app.accentChoice])+L"  ▾",54);
++   const float languageX=x+296;
++   labelUi(L"Language / 语言",{languageX,350,right-28,382},app.h2,ink());
++   button({languageX,390,right-28,434},std::wstring(language::languageName(app.languagePreference))+L"  ▾",55);
++   labelUi(L"Language changes immediately and is remembered for the next launch.",{x,442,right-28,466},app.small,muted());
++   labelUi(L"Some technical diagnostics remain in English. Game names and file paths are unchanged.",{x,468,right-28,492},app.small,muted());
++   labelUi(L"Startup",{x,506,right-28,538},app.h2,ink());
++   button({x,546,std::min(x+430.f,right-28),588},app.autoScanOnStart?L"Scan installed games at startup: On  ▾":L"Scan installed games at startup: Off  ▾",56);
++   labelUi(L"When enabled, the Manager scans Steam, Epic, GOG and Xbox game libraries each time it opens. Turn it off to open immediately; use Discover games to scan on demand.",{x,596,right-28,640},app.small,muted());
++   button({x,650,x+300,696},textFormat(L"Restore hidden games ({0})",{std::to_wstring(app.hidden.size())}),35,false,!app.hidden.empty());
+   }
+   if(app.page==5){labelUi(L"Smooth Motion Manager 2.8.5-rtx20-rtx30-dx12-preview2-fix24-test",{x,195,right-28,235},app.h1,ink());labelUi(L"Choose standalone version.dll or new.asi with an ASI loader. Each installation creates uninstall.bat beside the game executable.\n\nRTX 20-series optical flow with custom frame synthesis. DirectX 11 and DirectX 12 SDR preview; not NVIDIA's proprietary Smooth Motion model.\n\nSix themes and five accent colours. Liquid glass interface: frosted, refracting panels over a theme aurora.\n\nUltimate ASI Loader by ThirteenAG and contributors. Licence and release provenance are included.\n\nPer-game startup, displayed frame output and performance require hardware testing.",{x,258,right-35,563},app.body,muted());}
+ 
+@@ -547,5 +559,5 @@ int WINAPI wWinMain(HINSTANCE instance,HINSTANCE,PWSTR command,int){try{
+  manager_startup::checkpoint("drawing_services");
+  if(FAILED(D2D1CreateFactory(D2D1_FACTORY_TYPE_SINGLE_THREADED,&app.factory))||FAILED(DWriteCreateFactory(DWRITE_FACTORY_TYPE_SHARED,__uuidof(IDWriteFactory),reinterpret_cast<IUnknown**>(&app.writing))))throw std::runtime_error("Windows drawing services are unavailable");reloadFonts(app.uiLanguage);
+  WNDCLASSEXW wc{};wc.cbSize=sizeof wc;wc.hInstance=instance;wc.lpfnWndProc=procedure;wc.lpszClassName=L"SM86_Manager_Window_1";wc.hCursor=LoadCursorW(nullptr,IDC_ARROW);wc.hIcon=LoadIconW(nullptr,IDI_APPLICATION);if(!RegisterClassExW(&wc))throw std::runtime_error("Cannot register manager window");HWND window=CreateWindowExW(0,wc.lpszClassName,L"Smooth Motion Manager",WS_OVERLAPPEDWINDOW,CW_USEDEFAULT,CW_USEDEFAULT,1320,885,nullptr,nullptr,instance,nullptr);if(!window)throw std::runtime_error("Cannot create manager window");app.monitorDpi=static_cast<float>(GetDpiForWindow(window));MONITORINFO monitor{};monitor.cbSize=sizeof monitor;if(GetMonitorInfoW(MonitorFromWindow(window,MONITOR_DEFAULTTONEAREST),&monitor)){int w=std::min<LONG>(static_cast<int>(1320*app.monitorDpi/96),monitor.rcWork.right-monitor.rcWork.left-24),h=std::min<LONG>(static_cast<int>(885*app.monitorDpi/96),monitor.rcWork.bottom-monitor.rcWork.top-24);SetWindowPos(window,nullptr,monitor.rcWork.left+12,monitor.rcWork.top+12,w,h,SWP_NOZORDER|SWP_NOACTIVATE);}fitWindow();int corners=2;DwmSetWindowAttribute(window,33,&corners,sizeof corners);
+- preferences(true);updateAppearance();manager_startup::checkpoint("saved_library");app.games=loadGames();activity(L"Manager ready. Looking for installed games and artwork…");ShowWindow(window,SW_SHOWNORMAL);manager_startup::checkpoint("first_paint");UpdateWindow(window);manager_startup::checkpoint("discovery");SetTimer(window,1,1500,nullptr);discover();MSG message{};while(GetMessageW(&message,nullptr,0,0)>0){TranslateMessage(&message);DispatchMessageW(&message);}app.images.clear();app.glass.clear();release(app.brush);release(app.target);release(app.h1);release(app.h2);release(app.body);release(app.small);release(app.writing);release(app.factory);ReleaseMutex(mutex);CloseHandle(mutex);manager_startup::checkpoint("normal_exit");CoUninitialize();return 0;
++ preferences(true);updateAppearance();manager_startup::checkpoint("saved_library");app.games=loadGames();activity(app.autoScanOnStart?L"Manager ready. Looking for installed games and artwork…":L"Manager ready. Automatic game scanning is off; use Discover games to scan when needed.");ShowWindow(window,SW_SHOWNORMAL);manager_startup::checkpoint("first_paint");UpdateWindow(window);manager_startup::checkpoint("discovery");SetTimer(window,1,1500,nullptr);if(app.autoScanOnStart)discover();else startArtwork();MSG message{};while(GetMessageW(&message,nullptr,0,0)>0){TranslateMessage(&message);DispatchMessageW(&message);}app.images.clear();app.glass.clear();release(app.brush);release(app.target);release(app.h1);release(app.h2);release(app.body);release(app.small);release(app.writing);release(app.factory);ReleaseMutex(mutex);CloseHandle(mutex);manager_startup::checkpoint("normal_exit");CoUninitialize();return 0;
+  }catch(const std::exception& e){manager_startup::record("startup_exception",ERROR_UNHANDLED_EXCEPTION);MessageBoxA(nullptr,e.what(),"Smooth Motion Manager",MB_OK|MB_ICONERROR);return 1;}catch(...){manager_startup::record("startup_exception",ERROR_UNHANDLED_EXCEPTION);uiMessage(nullptr,L"Startup stopped. See LocalAppData\\SM86Manager\\startup-*.log for details.",L"Smooth Motion Manager",MB_OK|MB_ICONERROR);return 1;}}
+diff --git a/source/ui/localization.hpp b/source/ui/localization.hpp
+index 35b8c8e..91aa45e 100644
+--- a/source/ui/localization.hpp
++++ b/source/ui/localization.hpp
+@@ -293,7 +293,15 @@ inline constexpr Entry catalog[] = {
+     {L"Imported by local engine DLL", L"由本地引擎 DLL 导入"},
+     {L"Delay-imported by game EXE", L"由游戏 EXE 延迟导入"},
+     {L"Delay-imported by local engine DLL", L"由本地引擎 DLL 延迟导入"},
+-    {L"Fallback: game loading must be tested", L"备用方式：需要测试游戏加载"}
++    {L"Fallback: game loading must be tested", L"备用方式：需要测试游戏加载"},
++    {L"Startup", L"启动"},
++    {L"Scan installed games at startup: On  ▾", L"启动时自动扫描已安装游戏：开  ▾"},
++    {L"Scan installed games at startup: Off  ▾", L"启动时自动扫描已安装游戏：关  ▾"},
++    {L"When enabled, the Manager scans Steam, Epic, GOG and Xbox game libraries each time it opens. Turn it off to open immediately; use Discover games to scan on demand.", L"开启后，管理器每次打开都会扫描 Steam、Epic、GOG 和 Xbox 游戏库。关闭后可立即打开，需要时使用“扫描游戏”。"},
++    {L"Manager ready. Automatic game scanning is off; use Discover games to scan when needed.", L"管理器已就绪。已关闭自动扫描；需要时请使用“扫描游戏”。"},
++    {L"Automatic game scanning at startup is enabled.", L"已开启启动时自动扫描游戏。"},
++    {L"Automatic game scanning at startup is disabled. Use Discover games to scan when needed.", L"已关闭启动时自动扫描游戏。需要时请使用“扫描游戏”。"},
++    {L"Could not save the startup scanning setting. It applies to this session only.", L"无法保存启动扫描设置。该设置仅在本次会话生效。"}
+ };
+ 
+ inline std::wstring_view lookup(std::wstring_view key, Language language) noexcept {
