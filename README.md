@@ -17,28 +17,19 @@
 
 UPDATE: **WORKS BOTH ON 20 SERIES AND 30 SERIES. no need to install two different managers anymore.**
 
-**Picture quality (PSNR, higher is better) went from 30.30 to around 40 dB.**
 
 New update:
 
 
-| Scene | Fix24 wrong px | Fix28 wrong px | New wrong px | New vs Fix24 | PSNR Fix24 → New |
-| :--- | ---: | ---: | ---: | :---: | :---: |
-| Parallax foliage | 25,619 | 16,178 | 14,591 | −43% | 21.0 → 23.9 dB |
-| Antialiased/translucent HUD + crosshair | 16,641 | 11,309 | 10,396 | −38% | 26.8 → 28.3 dB |
-| Character + blade, camera orbit | 13,470 | 4,830 | 3,766 | −72% | 26.1 → 33.2 dB |
-| Pole + wire crossing a still view | 13,339 | 13,716 | 11,836 | −11% | 22.7 → 25.1 dB |
-| HUD text over pan | 11,178 | 6,800 | 5,816 | −48% | 24.0 → 26.5 dB |
-| Fast vertical pan (44 px) | 10,960 | 8,245 | 7,794 | −29% | 31.1 → 32.2 dB |
-| Pan with exposure change | 8,808 | 3,182 | 2,954 | −66% | 33.9 → 37.1 dB |
-| Sword hilts over camera turn | 6,907 | 2,611 | 1,390 | −80% | 33.1 → 38.1 dB |
-| Diagonal pan (half-pixel) | 6,747 | 4,593 | 4,225 | −37% | 31.3 → 32.8 dB |
-| Helmet crest over starfield | 4,919 | 3,090 | 2,078 | −58% | 28.2 → 33.2 dB |
-| Camera pan | 4,306 | 1,120 | 606 | −86% | 32.0 → 41.2 dB |
-| Roofs over sky | 1,656 | 258 | 142 | −91% | 41.8 → 49.3 dB |
-| **Total** | **124,550** | **75,932** | **65,594** | **−47%** | |
-| **Mean PSNR** | **29.33 dB** | **31.90 dB** | **33.41 dB** | **+4.07 dB** | |
-| **Mean abs. error** | **0.0108** | **0.0073** | **0.0065** | **−40%** | |
+Image quality: more stable interpolation maths and fewer reproduced artifacts. It fixes motion banding (FP32 instead of half precision), harsh transitions, and unwanted colour shifts when the optional features are off.
+
+Optional HUD processing: corrections are more limited and the HUD fallback works as intended. The optional features stay off by default, and moving or transparent HUD elements can still show artifacts.
+
+Performance: less setup and processing overhead, plus safer handling of CUDA contexts, GPU identity and resources. It doesn't promise more FPS or lower latency overall.
+
+Vulkan and startup: sturdier Vulkan initialization and teardown, fixes for row alignment, buffer limits and Present semaphores, and better DXGI and version.dll proxy startup.
+
+Other: rejects unverified resource combinations, fixes the CreateSwapChainForComposition hook, and keeps existing user configuration.
 
 
 
